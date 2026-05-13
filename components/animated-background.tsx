@@ -2,70 +2,51 @@
 
 import { useEffect, useRef, useCallback } from "react";
 
-interface WaterRipple {
+interface Ripple {
   x: number;
   y: number;
   radius: number;
   maxRadius: number;
   opacity: number;
-  waveCount: number;
+  rings: number;
 }
 
-interface Bubble {
+interface FloatingElement {
   x: number;
   y: number;
-  radius: number;
+  size: number;
   speed: number;
   wobble: number;
   wobbleSpeed: number;
   opacity: number;
+  type: "bubble" | "star" | "orb";
+  hue: number;
 }
 
-interface WaveLayer {
-  amplitude: number;
-  frequency: number;
+interface FlowLine {
+  points: { x: number; y: number }[];
   speed: number;
   offset: number;
-  color: string;
+  thickness: number;
+  opacity: number;
 }
 
 export function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const ripplesRef = useRef<WaterRipple[]>([]);
-  const bubblesRef = useRef<Bubble[]>([]);
+  const ripplesRef = useRef<Ripple[]>([]);
+  const floatingRef = useRef<FloatingElement[]>([]);
+  const flowLinesRef = useRef<FlowLine[]>([]);
   const mouseRef = useRef({ x: 0, y: 0, prevX: 0, prevY: 0 });
   const timeRef = useRef(0);
 
-  // Ocean color palette
-  const oceanColors = {
-    deepBlue: "oklch(0.35 0.15 240)",
-    midBlue: "oklch(0.50 0.18 230)",
-    lightBlue: "oklch(0.70 0.12 220)",
-    cyan: "oklch(0.75 0.15 200)",
-    foam: "oklch(0.95 0.03 210)",
-    teal: "oklch(0.60 0.14 195)",
-  };
-
-  const addRipple = useCallback((x: number, y: number, large: boolean = false) => {
+  const addRipple = useCallback((x: number, y: number, large = false) => {
     ripplesRef.current.push({
       x,
       y,
       radius: 0,
-      maxRadius: large ? 300 : 150 + Math.random() * 100,
-      opacity: large ? 0.6 : 0.4,
-      waveCount: large ? 5 : 3,
-    });
-  }, []);
-
-  const addBubble = useCallback((x: number, y: number) => {
-    bubblesRef.current.push({
-      x,
-      y,
-      radius: 3 + Math.random() * 8,
-      speed: 1 + Math.random() * 2,
-      wobble: 0,
-      wobbleSpeed: 0.02 + Math.random() * 0.03,
-      opacity: 0.4 + Math.random() * 0.3,
+      maxRadius: large ? 250 : 120 + Math.random() * 80,
+      opacity: large ? 0.5 : 0.35,
+      rings: large ? 4 : 2,
     });
   }, []);
 
@@ -86,20 +67,54 @@ export function AnimatedBackground() {
     resize();
     window.addEventListener("resize", resize);
 
-    // Initialize ambient bubbles
-    for (let i = 0; i < 30; i++) {
-      bubblesRef.current.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * document.documentElement.scrollHeight,
-        radius: 2 + Math.random() * 6,
-        speed: 0.5 + Math.random() * 1.5,
-        wobble: Math.random() * Math.PI * 2,
-        wobbleSpeed: 0.01 + Math.random() * 0.02,
-        opacity: 0.2 + Math.random() * 0.3,
-      });
-    }
+    // Initialize floating elements
+    const initFloatingElements = () => {
+      floatingRef.current = [];
+      const count = Math.min(60, Math.floor(window.innerWidth / 30));
+      
+      for (let i = 0; i < count; i++) {
+        const type = Math.random() > 0.7 ? "star" : Math.random() > 0.5 ? "orb" : "bubble";
+        floatingRef.current.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * document.documentElement.scrollHeight,
+          size: type === "star" ? 2 + Math.random() * 3 : 4 + Math.random() * 12,
+          speed: 0.3 + Math.random() * 0.8,
+          wobble: Math.random() * Math.PI * 2,
+          wobbleSpeed: 0.01 + Math.random() * 0.02,
+          opacity: 0.2 + Math.random() * 0.5,
+          type,
+          hue: 200 + Math.random() * 80, // Blue to purple range
+        });
+      }
+    };
 
-    // Mouse move handler
+    // Initialize flow lines (organic currents)
+    const initFlowLines = () => {
+      flowLinesRef.current = [];
+      const lineCount = 8;
+      
+      for (let i = 0; i < lineCount; i++) {
+        const points: { x: number; y: number }[] = [];
+        const yBase = (i / lineCount) * canvas.height;
+        
+        for (let x = 0; x <= canvas.width + 100; x += 50) {
+          points.push({ x, y: yBase });
+        }
+        
+        flowLinesRef.current.push({
+          points,
+          speed: 0.002 + Math.random() * 0.003,
+          offset: Math.random() * Math.PI * 2,
+          thickness: 1 + Math.random() * 2,
+          opacity: 0.03 + Math.random() * 0.05,
+        });
+      }
+    };
+
+    initFloatingElements();
+    initFlowLines();
+
+    // Mouse handlers
     let lastRippleTime = 0;
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.prevX = mouseRef.current.x;
@@ -112,11 +127,8 @@ export function AnimatedBackground() {
       const speed = Math.sqrt(dx * dx + dy * dy);
 
       const now = Date.now();
-      if (speed > 3 && now - lastRippleTime > 80) {
+      if (speed > 5 && now - lastRippleTime > 100) {
         addRipple(mouseRef.current.x, mouseRef.current.y, false);
-        if (speed > 10 && Math.random() > 0.7) {
-          addBubble(mouseRef.current.x, mouseRef.current.y);
-        }
         lastRippleTime = now;
       }
     };
@@ -125,14 +137,6 @@ export function AnimatedBackground() {
       const x = e.clientX;
       const y = e.clientY + window.scrollY;
       addRipple(x, y, true);
-      for (let i = 0; i < 8; i++) {
-        setTimeout(() => {
-          addBubble(
-            x + (Math.random() - 0.5) * 60,
-            y + (Math.random() - 0.5) * 60
-          );
-        }, i * 50);
-      }
     };
 
     const handleScroll = () => {
@@ -143,25 +147,56 @@ export function AnimatedBackground() {
     window.addEventListener("click", handleClick);
     window.addEventListener("scroll", handleScroll);
 
-    // Wave layers for ocean depth effect
-    const waveLayers: WaveLayer[] = [
-      { amplitude: 80, frequency: 0.002, speed: 0.0003, offset: 0, color: "oklch(0.30 0.12 240 / 0.15)" },
-      { amplitude: 60, frequency: 0.003, speed: 0.0005, offset: Math.PI / 3, color: "oklch(0.40 0.14 235 / 0.12)" },
-      { amplitude: 40, frequency: 0.004, speed: 0.0007, offset: Math.PI / 2, color: "oklch(0.50 0.16 230 / 0.10)" },
-      { amplitude: 25, frequency: 0.005, speed: 0.001, offset: Math.PI, color: "oklch(0.60 0.12 225 / 0.08)" },
-    ];
+    // Draw functions
+    const drawDeepOceanGradient = () => {
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width * 0.3, canvas.height);
+      gradient.addColorStop(0, "oklch(0.06 0.04 250)");
+      gradient.addColorStop(0.2, "oklch(0.08 0.05 245)");
+      gradient.addColorStop(0.4, "oklch(0.10 0.06 240)");
+      gradient.addColorStop(0.6, "oklch(0.08 0.05 245)");
+      gradient.addColorStop(0.8, "oklch(0.06 0.04 250)");
+      gradient.addColorStop(1, "oklch(0.05 0.03 255)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    };
 
-    // Caustic light patterns
-    const drawCaustics = (ctx: CanvasRenderingContext2D, time: number) => {
-      const causticCount = 12;
+    const drawFlowingCurrents = (time: number) => {
+      flowLinesRef.current.forEach((line) => {
+        ctx.beginPath();
+        ctx.strokeStyle = `oklch(0.50 0.15 240 / ${line.opacity})`;
+        ctx.lineWidth = line.thickness;
+        ctx.lineCap = "round";
+
+        const yOffset = (canvas.height / flowLinesRef.current.length);
+        
+        line.points.forEach((point, i) => {
+          const wave1 = Math.sin(point.x * 0.003 + time * line.speed * 50 + line.offset) * 40;
+          const wave2 = Math.sin(point.x * 0.007 + time * line.speed * 30) * 25;
+          const wave3 = Math.cos(point.x * 0.002 + time * line.speed * 70 + line.offset) * 35;
+          const y = point.y + wave1 + wave2 + wave3;
+          
+          if (i === 0) {
+            ctx.moveTo(point.x, y);
+          } else {
+            ctx.lineTo(point.x, y);
+          }
+        });
+        
+        ctx.stroke();
+      });
+    };
+
+    const drawCausticLights = (time: number) => {
+      const causticCount = 15;
       for (let i = 0; i < causticCount; i++) {
-        const x = (Math.sin(time * 0.3 + i * 1.5) * 0.3 + 0.5) * canvas.width;
-        const y = (Math.cos(time * 0.2 + i * 1.2) * 0.3 + 0.5) * canvas.height;
-        const radius = 150 + Math.sin(time + i) * 50;
+        const x = (Math.sin(time * 0.2 + i * 1.3) * 0.4 + 0.5) * canvas.width;
+        const y = (Math.cos(time * 0.15 + i * 1.1) * 0.4 + 0.5) * canvas.height;
+        const radius = 100 + Math.sin(time * 0.5 + i) * 50;
+        const hue = 220 + Math.sin(time * 0.3 + i) * 40;
 
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-        gradient.addColorStop(0, "oklch(0.85 0.08 200 / 0.15)");
-        gradient.addColorStop(0.5, "oklch(0.80 0.06 210 / 0.08)");
+        gradient.addColorStop(0, `oklch(0.55 0.15 ${hue} / 0.12)`);
+        gradient.addColorStop(0.4, `oklch(0.50 0.12 ${hue} / 0.06)`);
         gradient.addColorStop(1, "transparent");
 
         ctx.beginPath();
@@ -171,180 +206,190 @@ export function AnimatedBackground() {
       }
     };
 
-    // Draw flowing currents
-    const drawCurrents = (ctx: CanvasRenderingContext2D, time: number) => {
-      ctx.strokeStyle = "oklch(0.70 0.10 210 / 0.06)";
-      ctx.lineWidth = 2;
+    const drawLightRays = (time: number) => {
+      for (let i = 0; i < 6; i++) {
+        const x = (i / 5) * canvas.width + Math.sin(time * 0.3 + i * 0.8) * 80;
+        const width = 60 + Math.sin(time * 0.5 + i) * 20;
+        const gradient = ctx.createLinearGradient(x, 0, x + width * 2, canvas.height * 0.7);
+        const hue = 220 + i * 10;
+        
+        gradient.addColorStop(0, `oklch(0.65 0.12 ${hue} / 0.08)`);
+        gradient.addColorStop(0.3, `oklch(0.55 0.10 ${hue} / 0.04)`);
+        gradient.addColorStop(1, "transparent");
 
-      for (let i = 0; i < 8; i++) {
-        const yBase = (i / 8) * canvas.height;
         ctx.beginPath();
-        ctx.moveTo(0, yBase);
-
-        for (let x = 0; x <= canvas.width; x += 10) {
-          const wave1 = Math.sin(x * 0.005 + time * 0.5 + i) * 30;
-          const wave2 = Math.sin(x * 0.008 + time * 0.3 + i * 0.5) * 20;
-          const wave3 = Math.sin(x * 0.012 + time * 0.7 + i * 0.8) * 15;
-          const y = yBase + wave1 + wave2 + wave3;
-          ctx.lineTo(x, y);
-        }
-        ctx.stroke();
+        ctx.fillStyle = gradient;
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + width, 0);
+        ctx.lineTo(x + width * 3, canvas.height * 0.7);
+        ctx.lineTo(x - width, canvas.height * 0.7);
+        ctx.closePath();
+        ctx.fill();
       }
     };
 
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      timeRef.current += 0.016;
-      const time = timeRef.current;
+    const drawFloatingElements = (time: number) => {
+      floatingRef.current.forEach((el) => {
+        el.y -= el.speed;
+        el.wobble += el.wobbleSpeed;
+        el.x += Math.sin(el.wobble) * 0.8;
 
-      // Deep ocean gradient background
-      const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      bgGradient.addColorStop(0, "oklch(0.92 0.04 220)");
-      bgGradient.addColorStop(0.2, "oklch(0.88 0.06 215)");
-      bgGradient.addColorStop(0.4, "oklch(0.82 0.08 210)");
-      bgGradient.addColorStop(0.6, "oklch(0.75 0.10 205)");
-      bgGradient.addColorStop(0.8, "oklch(0.65 0.12 200)");
-      bgGradient.addColorStop(1, "oklch(0.55 0.14 195)");
-      ctx.fillStyle = bgGradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw caustic light effects
-      drawCaustics(ctx, time);
-
-      // Draw flowing currents
-      drawCurrents(ctx, time);
-
-      // Draw wave layers
-      waveLayers.forEach((layer, index) => {
-        ctx.beginPath();
-        ctx.fillStyle = layer.color;
-
-        const yOffset = index * (canvas.height / waveLayers.length);
-
-        for (let x = 0; x <= canvas.width; x += 5) {
-          const y =
-            yOffset +
-            Math.sin(x * layer.frequency + time * 10 * layer.speed + layer.offset) * layer.amplitude +
-            Math.sin(x * layer.frequency * 1.5 + time * 15 * layer.speed) * (layer.amplitude * 0.5);
-
-          if (x === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
+        // Reset when off screen
+        if (el.y < -50) {
+          el.y = canvas.height + 50;
+          el.x = Math.random() * canvas.width;
         }
 
-        ctx.lineTo(canvas.width, canvas.height);
-        ctx.lineTo(0, canvas.height);
-        ctx.closePath();
-        ctx.fill();
-      });
-
-      // Draw and update water ripples
-      ripplesRef.current = ripplesRef.current.filter((ripple) => {
-        ripple.radius += 3;
-        ripple.opacity -= 0.008;
-
-        if (ripple.opacity <= 0) return false;
-
-        // Draw multiple concentric waves
-        for (let w = 0; w < ripple.waveCount; w++) {
-          const waveRadius = ripple.radius - w * 20;
-          if (waveRadius <= 0) continue;
-
-          const waveOpacity = ripple.opacity * (1 - w / ripple.waveCount);
-
-          // Outer glow
+        if (el.type === "star") {
+          // Draw star with twinkle
+          const twinkle = 0.5 + Math.sin(time * 3 + el.wobble * 10) * 0.5;
+          const size = el.size * twinkle;
+          
+          ctx.save();
+          ctx.translate(el.x, el.y);
+          ctx.rotate(time * 0.5 + el.wobble);
+          
+          // Star shape
+          ctx.beginPath();
+          for (let i = 0; i < 4; i++) {
+            const angle = (i / 4) * Math.PI * 2;
+            const outerX = Math.cos(angle) * size * 2;
+            const outerY = Math.sin(angle) * size * 2;
+            const innerAngle = angle + Math.PI / 4;
+            const innerX = Math.cos(innerAngle) * size * 0.5;
+            const innerY = Math.sin(innerAngle) * size * 0.5;
+            
+            if (i === 0) ctx.moveTo(outerX, outerY);
+            else ctx.lineTo(outerX, outerY);
+            ctx.lineTo(innerX, innerY);
+          }
+          ctx.closePath();
+          
+          ctx.fillStyle = `oklch(0.90 0.08 ${el.hue} / ${el.opacity * twinkle})`;
+          ctx.shadowColor = `oklch(0.85 0.15 ${el.hue} / 0.8)`;
+          ctx.shadowBlur = 10;
+          ctx.fill();
+          ctx.restore();
+          
+        } else if (el.type === "orb") {
+          // Iridescent orb
+          const pulse = 1 + Math.sin(time * 2 + el.wobble) * 0.2;
           const gradient = ctx.createRadialGradient(
-            ripple.x,
-            ripple.y,
-            waveRadius * 0.8,
-            ripple.x,
-            ripple.y,
-            waveRadius
+            el.x - el.size * 0.3, el.y - el.size * 0.3, 0,
+            el.x, el.y, el.size * pulse
           );
-          gradient.addColorStop(0, "transparent");
-          gradient.addColorStop(0.7, `oklch(0.85 0.08 210 / ${waveOpacity * 0.3})`);
+          gradient.addColorStop(0, `oklch(0.85 0.15 ${el.hue} / ${el.opacity * 0.8})`);
+          gradient.addColorStop(0.5, `oklch(0.60 0.18 ${el.hue + 30} / ${el.opacity * 0.4})`);
+          gradient.addColorStop(1, `oklch(0.40 0.12 ${el.hue + 60} / 0)`);
+
+          ctx.beginPath();
+          ctx.fillStyle = gradient;
+          ctx.arc(el.x, el.y, el.size * pulse, 0, Math.PI * 2);
+          ctx.fill();
+          
+        } else {
+          // Bubble
+          const gradient = ctx.createRadialGradient(
+            el.x - el.size * 0.3, el.y - el.size * 0.3, 0,
+            el.x, el.y, el.size
+          );
+          gradient.addColorStop(0, `oklch(0.95 0.05 ${el.hue} / ${el.opacity * 0.6})`);
+          gradient.addColorStop(0.7, `oklch(0.70 0.10 ${el.hue} / ${el.opacity * 0.2})`);
           gradient.addColorStop(1, "transparent");
 
           ctx.beginPath();
           ctx.fillStyle = gradient;
-          ctx.arc(ripple.x, ripple.y, waveRadius, 0, Math.PI * 2);
+          ctx.arc(el.x, el.y, el.size, 0, Math.PI * 2);
           ctx.fill();
 
-          // Ripple ring
+          // Highlight
           ctx.beginPath();
-          ctx.strokeStyle = `oklch(0.90 0.05 205 / ${waveOpacity})`;
-          ctx.lineWidth = 2 - w * 0.3;
-          ctx.arc(ripple.x, ripple.y, waveRadius, 0, Math.PI * 2);
+          ctx.fillStyle = `oklch(0.98 0.02 210 / ${el.opacity * 0.5})`;
+          ctx.arc(el.x - el.size * 0.3, el.y - el.size * 0.3, el.size * 0.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    };
+
+    const drawRipples = () => {
+      ripplesRef.current = ripplesRef.current.filter((ripple) => {
+        ripple.radius += 2.5;
+        ripple.opacity -= 0.008;
+
+        if (ripple.opacity <= 0) return false;
+
+        for (let r = 0; r < ripple.rings; r++) {
+          const ringRadius = ripple.radius - r * 25;
+          if (ringRadius <= 0) continue;
+
+          const ringOpacity = ripple.opacity * (1 - r / ripple.rings);
+
+          // Glow
+          const gradient = ctx.createRadialGradient(
+            ripple.x, ripple.y, ringRadius * 0.7,
+            ripple.x, ripple.y, ringRadius
+          );
+          gradient.addColorStop(0, "transparent");
+          gradient.addColorStop(0.6, `oklch(0.65 0.15 230 / ${ringOpacity * 0.3})`);
+          gradient.addColorStop(1, "transparent");
+
+          ctx.beginPath();
+          ctx.fillStyle = gradient;
+          ctx.arc(ripple.x, ripple.y, ringRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Ring line
+          ctx.beginPath();
+          ctx.strokeStyle = `oklch(0.80 0.10 220 / ${ringOpacity})`;
+          ctx.lineWidth = 1.5 - r * 0.3;
+          ctx.arc(ripple.x, ripple.y, ringRadius, 0, Math.PI * 2);
           ctx.stroke();
         }
 
         return true;
       });
+    };
 
-      // Draw and update bubbles
-      bubblesRef.current = bubblesRef.current.filter((bubble) => {
-        bubble.y -= bubble.speed;
-        bubble.wobble += bubble.wobbleSpeed;
-        bubble.x += Math.sin(bubble.wobble) * 0.5;
+    const drawOrganicBlobs = (time: number) => {
+      const blobs = [
+        { x: 0.15, y: 0.2, size: 300, hue: 250, speed: 0.3 },
+        { x: 0.85, y: 0.35, size: 400, hue: 220, speed: 0.25 },
+        { x: 0.5, y: 0.65, size: 350, hue: 280, speed: 0.35 },
+        { x: 0.2, y: 0.85, size: 280, hue: 200, speed: 0.4 },
+        { x: 0.75, y: 0.75, size: 320, hue: 240, speed: 0.28 },
+      ];
 
-        // Reset bubble when it goes off screen
-        if (bubble.y < -20) {
-          bubble.y = canvas.height + 20;
-          bubble.x = Math.random() * canvas.width;
-        }
+      blobs.forEach((blob, i) => {
+        const x = blob.x * canvas.width + Math.sin(time * blob.speed + i) * 50;
+        const y = blob.y * canvas.height + Math.cos(time * blob.speed * 0.8 + i) * 40;
+        const size = blob.size + Math.sin(time * 0.5 + i * 2) * 50;
 
-        // Draw bubble
-        const gradient = ctx.createRadialGradient(
-          bubble.x - bubble.radius * 0.3,
-          bubble.y - bubble.radius * 0.3,
-          0,
-          bubble.x,
-          bubble.y,
-          bubble.radius
-        );
-        gradient.addColorStop(0, `oklch(0.98 0.02 210 / ${bubble.opacity * 0.8})`);
-        gradient.addColorStop(0.5, `oklch(0.90 0.04 215 / ${bubble.opacity * 0.4})`);
-        gradient.addColorStop(1, `oklch(0.85 0.06 220 / ${bubble.opacity * 0.1})`);
-
-        ctx.beginPath();
-        ctx.fillStyle = gradient;
-        ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Highlight
-        ctx.beginPath();
-        ctx.fillStyle = `oklch(1 0 0 / ${bubble.opacity * 0.6})`;
-        ctx.arc(
-          bubble.x - bubble.radius * 0.3,
-          bubble.y - bubble.radius * 0.3,
-          bubble.radius * 0.25,
-          0,
-          Math.PI * 2
-        );
-        ctx.fill();
-
-        return true;
-      });
-
-      // Draw light rays from top
-      for (let i = 0; i < 5; i++) {
-        const x = (i / 4) * canvas.width + Math.sin(time * 0.5 + i) * 50;
-        const gradient = ctx.createLinearGradient(x, 0, x + 100, canvas.height * 0.6);
-        gradient.addColorStop(0, "oklch(0.95 0.04 200 / 0.12)");
-        gradient.addColorStop(0.5, "oklch(0.90 0.03 210 / 0.06)");
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, size);
+        gradient.addColorStop(0, `oklch(0.45 0.18 ${blob.hue} / 0.15)`);
+        gradient.addColorStop(0.5, `oklch(0.35 0.14 ${blob.hue + 20} / 0.08)`);
         gradient.addColorStop(1, "transparent");
 
         ctx.beginPath();
         ctx.fillStyle = gradient;
-        ctx.moveTo(x - 30, 0);
-        ctx.lineTo(x + 70, 0);
-        ctx.lineTo(x + 150, canvas.height * 0.6);
-        ctx.lineTo(x - 50, canvas.height * 0.6);
-        ctx.closePath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fill();
-      }
+      });
+    };
+
+    // Main draw loop
+    const draw = () => {
+      timeRef.current += 0.016;
+      const time = timeRef.current;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      drawDeepOceanGradient();
+      drawOrganicBlobs(time);
+      drawFlowingCurrents(time);
+      drawCausticLights(time);
+      drawLightRays(time);
+      drawFloatingElements(time);
+      drawRipples();
 
       animationFrameId = requestAnimationFrame(draw);
     };
@@ -358,7 +403,7 @@ export function AnimatedBackground() {
       window.removeEventListener("click", handleClick);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [addRipple, addBubble]);
+  }, [addRipple]);
 
   return (
     <canvas

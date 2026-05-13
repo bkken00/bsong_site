@@ -1,138 +1,108 @@
 @import "tailwindcss";
 
 @theme {
-  /* Ocean Color Palette */
-  --color-background: oklch(0.92 0.04 220);
-  --color-foreground: oklch(0.15 0.08 220);
+  /* Avant-Garde Ocean Palette - Inspired by reference images */
+  --color-background: oklch(0.08 0.03 240);
+  --color-foreground: oklch(0.95 0.02 210);
   
-  --color-primary: oklch(0.50 0.18 220);
+  --color-primary: oklch(0.55 0.22 250);
   --color-primary-foreground: oklch(0.98 0.01 220);
   
-  --color-secondary: oklch(0.65 0.14 200);
-  --color-secondary-foreground: oklch(0.15 0.06 200);
+  --color-secondary: oklch(0.50 0.18 280);
+  --color-secondary-foreground: oklch(0.98 0.01 270);
   
-  --color-muted: oklch(0.88 0.05 215);
-  --color-muted-foreground: oklch(0.40 0.08 220);
+  --color-muted: oklch(0.15 0.04 240);
+  --color-muted-foreground: oklch(0.70 0.06 220);
   
-  --color-accent: oklch(0.60 0.16 195);
-  --color-accent-foreground: oklch(0.98 0.01 195);
+  --color-accent: oklch(0.65 0.20 200);
+  --color-accent-foreground: oklch(0.08 0.02 200);
   
-  --color-card: oklch(0.96 0.03 215 / 0.7);
-  --color-card-foreground: oklch(0.15 0.08 220);
+  --color-card: oklch(0.12 0.04 240 / 0.6);
+  --color-card-foreground: oklch(0.95 0.02 210);
   
-  --color-border: oklch(0.75 0.08 210 / 0.4);
+  --color-border: oklch(0.30 0.10 240 / 0.5);
   
-  /* Ocean Glassmorphism */
-  --color-glass: oklch(0.95 0.04 210 / 0.4);
-  --color-glass-border: oklch(0.90 0.05 205 / 0.5);
+  /* Glassmorphism - Deep Ocean */
+  --color-glass: oklch(0.15 0.06 240 / 0.4);
+  --color-glass-border: oklch(0.35 0.12 230 / 0.4);
   
-  /* Ocean specific colors */
-  --color-ocean-deep: oklch(0.35 0.15 230);
-  --color-ocean-mid: oklch(0.50 0.16 220);
-  --color-ocean-light: oklch(0.70 0.12 210);
-  --color-ocean-surface: oklch(0.85 0.08 200);
-  --color-ocean-foam: oklch(0.95 0.03 195);
-  --color-ocean-teal: oklch(0.55 0.15 195);
+  /* Ocean depth colors */
+  --color-ocean-abyss: oklch(0.05 0.04 250);
+  --color-ocean-deep: oklch(0.20 0.12 245);
+  --color-ocean-mid: oklch(0.40 0.18 240);
+  --color-ocean-glow: oklch(0.60 0.22 220);
+  --color-ocean-surface: oklch(0.75 0.15 200);
+  --color-ocean-foam: oklch(0.92 0.04 200);
+  --color-ocean-iridescent: oklch(0.70 0.20 280);
   
   /* Typography */
   --font-serif: "Playfair Display", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
   
-  /* Border radius - organic wave-like */
+  /* Border radius */
   --radius: 1.5rem;
   --radius-sm: 1rem;
   --radius-lg: 2rem;
   --radius-full: 9999px;
 }
 
-/* Animated ocean mesh background */
-@keyframes ocean-wave {
-  0%, 100% {
-    transform: translateX(0) translateY(0);
-  }
-  25% {
-    transform: translateX(10px) translateY(-5px);
-  }
-  50% {
-    transform: translateX(0) translateY(5px);
-  }
-  75% {
-    transform: translateX(-10px) translateY(-3px);
-  }
+/* Avant-garde animations */
+@keyframes ocean-flow {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+  25% { transform: translateX(15px) translateY(-10px) rotate(1deg); }
+  50% { transform: translateX(0) translateY(10px) rotate(-1deg); }
+  75% { transform: translateX(-15px) translateY(-5px) rotate(0.5deg); }
 }
 
-@keyframes bubble-rise {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateY(-50%) scale(1.1);
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(-100%) scale(0.9);
-    opacity: 0;
-  }
+@keyframes iridescent-shift {
+  0%, 100% { filter: hue-rotate(0deg) brightness(1); }
+  25% { filter: hue-rotate(15deg) brightness(1.1); }
+  50% { filter: hue-rotate(-10deg) brightness(1.05); }
+  75% { filter: hue-rotate(20deg) brightness(1.15); }
+}
+
+@keyframes float-drift {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+  33% { transform: translateY(-20px) translateX(10px) rotate(5deg); }
+  66% { transform: translateY(10px) translateX(-15px) rotate(-3deg); }
 }
 
 @keyframes ripple-expand {
-  0% {
-    transform: scale(0);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(3);
-    opacity: 0;
-  }
+  0% { transform: scale(0); opacity: 0.8; }
+  100% { transform: scale(4); opacity: 0; }
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  25% {
-    transform: translateY(-8px) rotate(2deg);
-  }
-  75% {
-    transform: translateY(5px) rotate(-2deg);
-  }
-}
-
-@keyframes shimmer-wave {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes current-flow {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px oklch(0.60 0.15 210 / 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px oklch(0.65 0.18 200 / 0.5);
-  }
+  0%, 100% { box-shadow: 0 0 20px oklch(0.55 0.22 250 / 0.3); }
+  50% { box-shadow: 0 0 60px oklch(0.65 0.20 220 / 0.6); }
 }
 
-@keyframes gradient-shift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer-wave {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float-bubble {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+  50% { transform: translateY(-30px) scale(1.1); opacity: 0.9; }
+}
+
+@keyframes organic-morph {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  50% { border-radius: 50% 60% 30% 60% / 40% 30% 60% 50%; }
+  75% { border-radius: 60% 40% 60% 30% / 30% 60% 40% 70%; }
 }
 
 /* Base styles */
@@ -152,124 +122,175 @@ body {
   overflow-x: hidden;
 }
 
-/* Ocean Glassmorphism */
+/* Deep Ocean Glassmorphism */
 .glass {
-  background: var(--color-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--color-glass-border);
+  background: linear-gradient(
+    135deg,
+    oklch(0.15 0.08 240 / 0.5) 0%,
+    oklch(0.12 0.06 250 / 0.4) 50%,
+    oklch(0.18 0.10 230 / 0.5) 100%
+  );
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid oklch(0.40 0.15 240 / 0.3);
   box-shadow: 
-    0 8px 32px oklch(0.50 0.15 220 / 0.1),
-    inset 0 1px 0 oklch(1 0 0 / 0.15),
-    inset 0 -1px 0 oklch(0.50 0.15 220 / 0.05);
+    0 8px 32px oklch(0.55 0.22 250 / 0.15),
+    inset 0 1px 0 oklch(1 0 0 / 0.1),
+    inset 0 -1px 0 oklch(0.55 0.22 250 / 0.1);
 }
 
 .glass-strong {
-  background: oklch(0.96 0.03 210 / 0.75);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: 1px solid oklch(0.92 0.04 205 / 0.6);
+  background: linear-gradient(
+    135deg,
+    oklch(0.18 0.10 240 / 0.7) 0%,
+    oklch(0.15 0.08 250 / 0.6) 50%,
+    oklch(0.20 0.12 230 / 0.7) 100%
+  );
+  backdrop-filter: blur(30px) saturate(1.8);
+  -webkit-backdrop-filter: blur(30px) saturate(1.8);
+  border: 1px solid oklch(0.45 0.18 240 / 0.4);
   box-shadow: 
-    0 8px 32px oklch(0.50 0.15 220 / 0.15),
-    inset 0 1px 0 oklch(1 0 0 / 0.2),
-    inset 0 -1px 0 oklch(0.50 0.15 220 / 0.08);
+    0 12px 48px oklch(0.55 0.22 250 / 0.2),
+    0 0 80px oklch(0.55 0.22 250 / 0.1),
+    inset 0 1px 0 oklch(1 0 0 / 0.15),
+    inset 0 -1px 0 oklch(0.55 0.22 250 / 0.15);
 }
 
-/* Water ripple effect on hover */
-.water-ripple {
-  position: relative;
-  overflow: hidden;
+/* Iridescent effect */
+.iridescent {
+  background: linear-gradient(
+    135deg,
+    oklch(0.55 0.22 250) 0%,
+    oklch(0.60 0.20 280) 25%,
+    oklch(0.65 0.18 200) 50%,
+    oklch(0.55 0.22 250) 75%,
+    oklch(0.60 0.20 280) 100%
+  );
+  background-size: 300% 300%;
+  animation: gradient-flow 6s ease infinite;
 }
 
-.water-ripple::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), oklch(0.85 0.10 200 / 0.3) 0%, transparent 50%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+/* Gradient text with iridescent effect */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    oklch(0.70 0.20 200) 0%,
+    oklch(0.75 0.22 220) 25%,
+    oklch(0.80 0.18 280) 50%,
+    oklch(0.70 0.20 250) 75%,
+    oklch(0.75 0.22 200) 100%
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-flow 5s ease infinite;
 }
 
-.water-ripple:hover::after {
-  opacity: 1;
-}
-
-/* Interactive glow on hover */
-.glow-hover {
-  transition: box-shadow 0.4s ease, transform 0.4s ease;
-}
-
-.glow-hover:hover {
-  box-shadow: 
-    0 0 30px oklch(0.60 0.15 210 / 0.4),
-    0 20px 40px oklch(0.50 0.18 220 / 0.2);
-  transform: translateY(-3px);
-}
-
-/* Ocean shimmer effect */
+/* Shimmer effect */
 .shimmer {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    oklch(0.90 0.06 200 / 0.2) 50%,
+    oklch(0.70 0.15 220 / 0.3) 50%,
     transparent 100%
   );
   background-size: 200% 100%;
-  animation: shimmer-wave 3s infinite;
+  animation: shimmer-wave 2.5s infinite;
 }
 
-/* Ocean gradient text */
-.gradient-text {
+/* Glow effect on hover */
+.glow-hover {
+  transition: box-shadow 0.5s ease, transform 0.4s ease;
+}
+
+.glow-hover:hover {
+  box-shadow: 
+    0 0 40px oklch(0.55 0.22 250 / 0.5),
+    0 0 80px oklch(0.60 0.20 220 / 0.3),
+    0 20px 60px oklch(0.55 0.22 250 / 0.25);
+  transform: translateY(-4px);
+}
+
+/* Organic shape */
+.organic-shape {
+  animation: organic-morph 15s ease-in-out infinite;
+}
+
+/* Floating animation */
+.float {
+  animation: float-drift 8s ease-in-out infinite;
+}
+
+/* Section transition decorator */
+.section-transition {
+  position: relative;
+}
+
+.section-transition::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -100px;
+  height: 200px;
   background: linear-gradient(
-    135deg,
-    oklch(0.50 0.18 230) 0%,
-    oklch(0.55 0.16 210) 30%,
-    oklch(0.60 0.14 195) 60%,
-    oklch(0.50 0.18 230) 100%
+    180deg,
+    transparent 0%,
+    oklch(0.55 0.15 250 / 0.05) 30%,
+    oklch(0.60 0.18 220 / 0.1) 50%,
+    oklch(0.55 0.15 250 / 0.05) 70%,
+    transparent 100%
   );
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradient-shift 4s ease infinite;
+  pointer-events: none;
 }
 
-/* Text selection with ocean theme */
+/* Star decoration */
+.star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: oklch(0.95 0.05 220);
+  border-radius: 50%;
+  animation: star-twinkle 2s ease-in-out infinite;
+  box-shadow: 0 0 10px oklch(0.90 0.10 220 / 0.8);
+}
+
+/* Text selection */
 ::selection {
-  background: oklch(0.60 0.15 210 / 0.4);
-  color: var(--color-foreground);
+  background: oklch(0.55 0.22 250 / 0.5);
+  color: oklch(0.98 0.01 220);
 }
 
-/* Ocean-themed scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: linear-gradient(180deg, oklch(0.88 0.05 215), oklch(0.82 0.07 210));
+  background: oklch(0.10 0.04 240);
 }
 
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(
     180deg,
-    oklch(0.55 0.14 210),
-    oklch(0.50 0.16 220),
-    oklch(0.55 0.14 210)
+    oklch(0.40 0.15 250),
+    oklch(0.50 0.18 240),
+    oklch(0.40 0.15 250)
   );
   border-radius: var(--radius-full);
-  border: 2px solid oklch(0.85 0.05 215);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
-    oklch(0.50 0.16 210),
-    oklch(0.45 0.18 220),
-    oklch(0.50 0.16 210)
+    oklch(0.50 0.18 250),
+    oklch(0.60 0.20 240),
+    oklch(0.50 0.18 250)
   );
 }
 
-/* Animated border gradient - ocean theme */
+/* Animated border */
 .border-gradient {
   position: relative;
 }
@@ -280,36 +301,16 @@ body {
   inset: -2px;
   background: linear-gradient(
     45deg,
-    oklch(0.50 0.18 230),
-    oklch(0.55 0.16 210),
-    oklch(0.60 0.14 195),
-    oklch(0.55 0.16 210),
-    oklch(0.50 0.18 230)
+    oklch(0.55 0.22 250),
+    oklch(0.60 0.20 280),
+    oklch(0.65 0.18 200),
+    oklch(0.60 0.20 280),
+    oklch(0.55 0.22 250)
   );
-  background-size: 300% 300%;
+  background-size: 400% 400%;
   border-radius: inherit;
   z-index: -1;
-  animation: gradient-shift 4s ease infinite;
-}
-
-/* Floating animation for cards */
-.float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* Current flow decoration */
-.current-line {
-  position: relative;
-  overflow: hidden;
-}
-
-.current-line::after {
-  content: "";
-  position: absolute;
-  height: 2px;
-  width: 100%;
-  background: linear-gradient(90deg, transparent, oklch(0.70 0.12 200 / 0.5), transparent);
-  animation: current-flow 3s linear infinite;
+  animation: gradient-flow 4s ease infinite;
 }
 
 /* Bubble button effect */
@@ -321,22 +322,38 @@ body {
 .bubble-btn::before {
   content: "";
   position: absolute;
-  width: 10px;
-  height: 10px;
-  background: oklch(0.95 0.03 200 / 0.6);
+  width: 12px;
+  height: 12px;
+  background: oklch(0.85 0.08 220 / 0.6);
   border-radius: 50%;
   bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
   opacity: 0;
-  transition: all 0.5s ease;
 }
 
 .bubble-btn:hover::before {
-  animation: bubble-rise 1s ease forwards;
+  animation: float-bubble 1s ease forwards;
 }
 
-/* Hoverable class for cursor effect */
+/* Hoverable cursor */
 .hoverable {
   cursor: pointer;
+}
+
+/* Water ripple container */
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Section flowing wave connector */
+.wave-connector {
+  position: absolute;
+  bottom: -50px;
+  left: 0;
+  right: 0;
+  height: 100px;
+  pointer-events: none;
+  z-index: 10;
 }
