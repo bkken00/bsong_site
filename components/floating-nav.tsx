@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
 export function FloatingNav() {
   const [activeSection, setActiveSection] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,27 +45,66 @@ export function FloatingNav() {
         isScrolled ? "glass-strong" : "glass"
       } rounded-full px-2 py-2`}
     >
-      <ul className="flex items-center gap-1">
+      {/* Animated glow effect */}
+      <motion.div
+        animate={{
+          boxShadow: isScrolled
+            ? "0 0 30px oklch(0.55 0.22 260 / 0.2)"
+            : "0 0 0px transparent",
+        }}
+        className="absolute inset-0 rounded-full pointer-events-none"
+      />
+
+      <ul className="flex items-center gap-1 relative">
         {navItems.map((item) => (
           <li key={item.name}>
-            <a
+            <motion.a
               href={item.href}
-              className={`relative px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 block ${
+              onMouseEnter={() => setHoveredItem(item.name)}
+              onMouseLeave={() => setHoveredItem(null)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`relative px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 block hoverable ${
                 activeSection === item.href.slice(1)
                   ? "text-primary-foreground"
                   : "text-foreground/70 hover:text-foreground"
               }`}
             >
+              {/* Active state background */}
               {activeSection === item.href.slice(1) && (
                 <motion.span
                   layoutId="activeSection"
-                  className="absolute inset-0 bg-primary rounded-full"
+                  className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-full"
                   style={{ zIndex: -1 }}
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
               )}
-              {item.name}
-            </a>
+
+              {/* Hover state background */}
+              <AnimatePresence>
+                {hoveredItem === item.name && activeSection !== item.href.slice(1) && (
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="absolute inset-0 bg-primary/10 rounded-full"
+                    style={{ zIndex: -1 }}
+                  />
+                )}
+              </AnimatePresence>
+
+              <span className="relative z-10">{item.name}</span>
+
+              {/* Hover indicator dots */}
+              {hoveredItem === item.name && (
+                <motion.span
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 5 }}
+                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                />
+              )}
+            </motion.a>
           </li>
         ))}
       </ul>
