@@ -2,69 +2,71 @@
 
 import { useEffect, useRef, useCallback } from "react";
 
-interface Ripple {
+interface WaterRipple {
   x: number;
   y: number;
   radius: number;
   maxRadius: number;
   opacity: number;
-  color: string;
+  waveCount: number;
 }
 
-interface Particle {
+interface Bubble {
   x: number;
   y: number;
-  vx: number;
-  vy: number;
   radius: number;
+  speed: number;
+  wobble: number;
+  wobbleSpeed: number;
+  opacity: number;
+}
+
+interface WaveLayer {
+  amplitude: number;
+  frequency: number;
+  speed: number;
+  offset: number;
   color: string;
-  life: number;
-  maxLife: number;
 }
 
 export function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const ripplesRef = useRef<Ripple[]>([]);
-  const particlesRef = useRef<Particle[]>([]);
+  const ripplesRef = useRef<WaterRipple[]>([]);
+  const bubblesRef = useRef<Bubble[]>([]);
   const mouseRef = useRef({ x: 0, y: 0, prevX: 0, prevY: 0 });
-  const scrollRef = useRef(0);
+  const timeRef = useRef(0);
 
-  const colors = [
-    "oklch(0.65 0.18 250)", // Vivid blue
-    "oklch(0.70 0.15 280)", // Purple
-    "oklch(0.75 0.20 200)", // Cyan
-    "oklch(0.65 0.22 320)", // Magenta
-    "oklch(0.80 0.12 180)", // Teal
-  ];
+  // Ocean color palette
+  const oceanColors = {
+    deepBlue: "oklch(0.35 0.15 240)",
+    midBlue: "oklch(0.50 0.18 230)",
+    lightBlue: "oklch(0.70 0.12 220)",
+    cyan: "oklch(0.75 0.15 200)",
+    foam: "oklch(0.95 0.03 210)",
+    teal: "oklch(0.60 0.14 195)",
+  };
 
-  const addRipple = useCallback((x: number, y: number) => {
-    const color = colors[Math.floor(Math.random() * colors.length)];
+  const addRipple = useCallback((x: number, y: number, large: boolean = false) => {
     ripplesRef.current.push({
       x,
       y,
       radius: 0,
-      maxRadius: 150 + Math.random() * 100,
-      opacity: 0.4,
-      color,
+      maxRadius: large ? 300 : 150 + Math.random() * 100,
+      opacity: large ? 0.6 : 0.4,
+      waveCount: large ? 5 : 3,
     });
   }, []);
 
-  const addParticles = useCallback((x: number, y: number, count: number) => {
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 1 + Math.random() * 3;
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      particlesRef.current.push({
-        x,
-        y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        radius: 2 + Math.random() * 4,
-        color,
-        life: 1,
-        maxLife: 60 + Math.random() * 60,
-      });
-    }
+  const addBubble = useCallback((x: number, y: number) => {
+    bubblesRef.current.push({
+      x,
+      y,
+      radius: 3 + Math.random() * 8,
+      speed: 1 + Math.random() * 2,
+      wobble: 0,
+      wobbleSpeed: 0.02 + Math.random() * 0.03,
+      opacity: 0.4 + Math.random() * 0.3,
+    });
   }, []);
 
   useEffect(() => {
@@ -84,7 +86,20 @@ export function AnimatedBackground() {
     resize();
     window.addEventListener("resize", resize);
 
-    // Mouse move handler with ripple creation
+    // Initialize ambient bubbles
+    for (let i = 0; i < 30; i++) {
+      bubblesRef.current.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * document.documentElement.scrollHeight,
+        radius: 2 + Math.random() * 6,
+        speed: 0.5 + Math.random() * 1.5,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.01 + Math.random() * 0.02,
+        opacity: 0.2 + Math.random() * 0.3,
+      });
+    }
+
+    // Mouse move handler
     let lastRippleTime = 0;
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.prevX = mouseRef.current.x;
@@ -92,35 +107,35 @@ export function AnimatedBackground() {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY + window.scrollY;
 
-      // Calculate mouse speed
       const dx = mouseRef.current.x - mouseRef.current.prevX;
       const dy = mouseRef.current.y - mouseRef.current.prevY;
       const speed = Math.sqrt(dx * dx + dy * dy);
 
-      // Create ripples based on movement
       const now = Date.now();
-      if (speed > 5 && now - lastRippleTime > 50) {
-        addRipple(mouseRef.current.x, mouseRef.current.y);
-        if (speed > 15) {
-          addParticles(mouseRef.current.x, mouseRef.current.y, Math.floor(speed / 5));
+      if (speed > 3 && now - lastRippleTime > 80) {
+        addRipple(mouseRef.current.x, mouseRef.current.y, false);
+        if (speed > 10 && Math.random() > 0.7) {
+          addBubble(mouseRef.current.x, mouseRef.current.y);
         }
         lastRippleTime = now;
       }
     };
 
-    // Click handler for burst effect
     const handleClick = (e: MouseEvent) => {
       const x = e.clientX;
       const y = e.clientY + window.scrollY;
-      for (let i = 0; i < 3; i++) {
-        setTimeout(() => addRipple(x, y), i * 100);
+      addRipple(x, y, true);
+      for (let i = 0; i < 8; i++) {
+        setTimeout(() => {
+          addBubble(
+            x + (Math.random() - 0.5) * 60,
+            y + (Math.random() - 0.5) * 60
+          );
+        }, i * 50);
       }
-      addParticles(x, y, 20);
     };
 
-    // Scroll handler
     const handleScroll = () => {
-      scrollRef.current = window.scrollY;
       resize();
     };
 
@@ -128,127 +143,209 @@ export function AnimatedBackground() {
     window.addEventListener("click", handleClick);
     window.addEventListener("scroll", handleScroll);
 
-    // Animated gradient blobs
-    const blobs = [
-      { x: 0.15, y: 0.1, radius: 400, vx: 0.0002, vy: 0.0003, color: "oklch(0.60 0.20 250 / 0.25)" },
-      { x: 0.85, y: 0.15, radius: 350, vx: -0.0003, vy: 0.0002, color: "oklch(0.70 0.18 280 / 0.20)" },
-      { x: 0.5, y: 0.3, radius: 450, vx: 0.0001, vy: -0.0002, color: "oklch(0.75 0.15 200 / 0.22)" },
-      { x: 0.2, y: 0.5, radius: 380, vx: 0.0002, vy: 0.0001, color: "oklch(0.65 0.22 320 / 0.18)" },
-      { x: 0.8, y: 0.55, radius: 420, vx: -0.0002, vy: 0.0002, color: "oklch(0.80 0.12 180 / 0.20)" },
-      { x: 0.3, y: 0.75, radius: 360, vx: 0.0003, vy: -0.0001, color: "oklch(0.68 0.20 240 / 0.22)" },
-      { x: 0.7, y: 0.85, radius: 400, vx: -0.0001, vy: 0.0003, color: "oklch(0.72 0.16 300 / 0.18)" },
-      { x: 0.5, y: 0.95, radius: 380, vx: 0.0002, vy: -0.0002, color: "oklch(0.78 0.14 220 / 0.20)" },
+    // Wave layers for ocean depth effect
+    const waveLayers: WaveLayer[] = [
+      { amplitude: 80, frequency: 0.002, speed: 0.0003, offset: 0, color: "oklch(0.30 0.12 240 / 0.15)" },
+      { amplitude: 60, frequency: 0.003, speed: 0.0005, offset: Math.PI / 3, color: "oklch(0.40 0.14 235 / 0.12)" },
+      { amplitude: 40, frequency: 0.004, speed: 0.0007, offset: Math.PI / 2, color: "oklch(0.50 0.16 230 / 0.10)" },
+      { amplitude: 25, frequency: 0.005, speed: 0.001, offset: Math.PI, color: "oklch(0.60 0.12 225 / 0.08)" },
     ];
 
-    let time = 0;
+    // Caustic light patterns
+    const drawCaustics = (ctx: CanvasRenderingContext2D, time: number) => {
+      const causticCount = 12;
+      for (let i = 0; i < causticCount; i++) {
+        const x = (Math.sin(time * 0.3 + i * 1.5) * 0.3 + 0.5) * canvas.width;
+        const y = (Math.cos(time * 0.2 + i * 1.2) * 0.3 + 0.5) * canvas.height;
+        const radius = 150 + Math.sin(time + i) * 50;
+
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        gradient.addColorStop(0, "oklch(0.85 0.08 200 / 0.15)");
+        gradient.addColorStop(0.5, "oklch(0.80 0.06 210 / 0.08)");
+        gradient.addColorStop(1, "transparent");
+
+        ctx.beginPath();
+        ctx.fillStyle = gradient;
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+
+    // Draw flowing currents
+    const drawCurrents = (ctx: CanvasRenderingContext2D, time: number) => {
+      ctx.strokeStyle = "oklch(0.70 0.10 210 / 0.06)";
+      ctx.lineWidth = 2;
+
+      for (let i = 0; i < 8; i++) {
+        const yBase = (i / 8) * canvas.height;
+        ctx.beginPath();
+        ctx.moveTo(0, yBase);
+
+        for (let x = 0; x <= canvas.width; x += 10) {
+          const wave1 = Math.sin(x * 0.005 + time * 0.5 + i) * 30;
+          const wave2 = Math.sin(x * 0.008 + time * 0.3 + i * 0.5) * 20;
+          const wave3 = Math.sin(x * 0.012 + time * 0.7 + i * 0.8) * 15;
+          const y = yBase + wave1 + wave2 + wave3;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+    };
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      timeRef.current += 0.016;
+      const time = timeRef.current;
 
-      // Fill with base gradient
-      const baseGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      baseGradient.addColorStop(0, "oklch(0.97 0.02 250)");
-      baseGradient.addColorStop(0.3, "oklch(0.95 0.03 270)");
-      baseGradient.addColorStop(0.6, "oklch(0.96 0.025 230)");
-      baseGradient.addColorStop(1, "oklch(0.94 0.035 260)");
-      ctx.fillStyle = baseGradient;
+      // Deep ocean gradient background
+      const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      bgGradient.addColorStop(0, "oklch(0.92 0.04 220)");
+      bgGradient.addColorStop(0.2, "oklch(0.88 0.06 215)");
+      bgGradient.addColorStop(0.4, "oklch(0.82 0.08 210)");
+      bgGradient.addColorStop(0.6, "oklch(0.75 0.10 205)");
+      bgGradient.addColorStop(0.8, "oklch(0.65 0.12 200)");
+      bgGradient.addColorStop(1, "oklch(0.55 0.14 195)");
+      ctx.fillStyle = bgGradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw animated blobs
-      blobs.forEach((blob, index) => {
-        const offsetX = Math.sin(time * 0.5 + index * 1.5) * 80;
-        const offsetY = Math.cos(time * 0.4 + index * 1.2) * 80;
-        const pulseRadius = blob.radius + Math.sin(time + index) * 50;
+      // Draw caustic light effects
+      drawCaustics(ctx, time);
 
-        const x = blob.x * canvas.width + offsetX;
-        const y = blob.y * canvas.height + offsetY;
+      // Draw flowing currents
+      drawCurrents(ctx, time);
 
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, pulseRadius);
-        gradient.addColorStop(0, blob.color);
-        gradient.addColorStop(0.5, blob.color.replace("/ 0.", "/ 0.1"));
-        gradient.addColorStop(1, "transparent");
-
+      // Draw wave layers
+      waveLayers.forEach((layer, index) => {
         ctx.beginPath();
-        ctx.fillStyle = gradient;
-        ctx.arc(x, y, pulseRadius, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillStyle = layer.color;
 
-        // Update blob position
-        blob.x += blob.vx;
-        blob.y += blob.vy;
-        if (blob.x < 0.05 || blob.x > 0.95) blob.vx *= -1;
-        if (blob.y < 0.02 || blob.y > 0.98) blob.vy *= -1;
+        const yOffset = index * (canvas.height / waveLayers.length);
+
+        for (let x = 0; x <= canvas.width; x += 5) {
+          const y =
+            yOffset +
+            Math.sin(x * layer.frequency + time * 10 * layer.speed + layer.offset) * layer.amplitude +
+            Math.sin(x * layer.frequency * 1.5 + time * 15 * layer.speed) * (layer.amplitude * 0.5);
+
+          if (x === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+
+        ctx.lineTo(canvas.width, canvas.height);
+        ctx.lineTo(0, canvas.height);
+        ctx.closePath();
+        ctx.fill();
       });
 
-      // Draw and update ripples
+      // Draw and update water ripples
       ripplesRef.current = ripplesRef.current.filter((ripple) => {
-        ripple.radius += 4;
-        ripple.opacity -= 0.01;
+        ripple.radius += 3;
+        ripple.opacity -= 0.008;
 
         if (ripple.opacity <= 0) return false;
 
+        // Draw multiple concentric waves
+        for (let w = 0; w < ripple.waveCount; w++) {
+          const waveRadius = ripple.radius - w * 20;
+          if (waveRadius <= 0) continue;
+
+          const waveOpacity = ripple.opacity * (1 - w / ripple.waveCount);
+
+          // Outer glow
+          const gradient = ctx.createRadialGradient(
+            ripple.x,
+            ripple.y,
+            waveRadius * 0.8,
+            ripple.x,
+            ripple.y,
+            waveRadius
+          );
+          gradient.addColorStop(0, "transparent");
+          gradient.addColorStop(0.7, `oklch(0.85 0.08 210 / ${waveOpacity * 0.3})`);
+          gradient.addColorStop(1, "transparent");
+
+          ctx.beginPath();
+          ctx.fillStyle = gradient;
+          ctx.arc(ripple.x, ripple.y, waveRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Ripple ring
+          ctx.beginPath();
+          ctx.strokeStyle = `oklch(0.90 0.05 205 / ${waveOpacity})`;
+          ctx.lineWidth = 2 - w * 0.3;
+          ctx.arc(ripple.x, ripple.y, waveRadius, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        return true;
+      });
+
+      // Draw and update bubbles
+      bubblesRef.current = bubblesRef.current.filter((bubble) => {
+        bubble.y -= bubble.speed;
+        bubble.wobble += bubble.wobbleSpeed;
+        bubble.x += Math.sin(bubble.wobble) * 0.5;
+
+        // Reset bubble when it goes off screen
+        if (bubble.y < -20) {
+          bubble.y = canvas.height + 20;
+          bubble.x = Math.random() * canvas.width;
+        }
+
+        // Draw bubble
         const gradient = ctx.createRadialGradient(
-          ripple.x,
-          ripple.y,
-          ripple.radius * 0.8,
-          ripple.x,
-          ripple.y,
-          ripple.radius
+          bubble.x - bubble.radius * 0.3,
+          bubble.y - bubble.radius * 0.3,
+          0,
+          bubble.x,
+          bubble.y,
+          bubble.radius
         );
-        gradient.addColorStop(0, "transparent");
-        gradient.addColorStop(0.5, ripple.color.replace(")", ` / ${ripple.opacity * 0.5})`));
+        gradient.addColorStop(0, `oklch(0.98 0.02 210 / ${bubble.opacity * 0.8})`);
+        gradient.addColorStop(0.5, `oklch(0.90 0.04 215 / ${bubble.opacity * 0.4})`);
+        gradient.addColorStop(1, `oklch(0.85 0.06 220 / ${bubble.opacity * 0.1})`);
+
+        ctx.beginPath();
+        ctx.fillStyle = gradient;
+        ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Highlight
+        ctx.beginPath();
+        ctx.fillStyle = `oklch(1 0 0 / ${bubble.opacity * 0.6})`;
+        ctx.arc(
+          bubble.x - bubble.radius * 0.3,
+          bubble.y - bubble.radius * 0.3,
+          bubble.radius * 0.25,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+
+        return true;
+      });
+
+      // Draw light rays from top
+      for (let i = 0; i < 5; i++) {
+        const x = (i / 4) * canvas.width + Math.sin(time * 0.5 + i) * 50;
+        const gradient = ctx.createLinearGradient(x, 0, x + 100, canvas.height * 0.6);
+        gradient.addColorStop(0, "oklch(0.95 0.04 200 / 0.12)");
+        gradient.addColorStop(0.5, "oklch(0.90 0.03 210 / 0.06)");
         gradient.addColorStop(1, "transparent");
 
         ctx.beginPath();
         ctx.fillStyle = gradient;
-        ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
+        ctx.moveTo(x - 30, 0);
+        ctx.lineTo(x + 70, 0);
+        ctx.lineTo(x + 150, canvas.height * 0.6);
+        ctx.lineTo(x - 50, canvas.height * 0.6);
+        ctx.closePath();
         ctx.fill();
+      }
 
-        // Draw ripple ring
-        ctx.beginPath();
-        ctx.strokeStyle = ripple.color.replace(")", ` / ${ripple.opacity})`);
-        ctx.lineWidth = 2;
-        ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
-        ctx.stroke();
-
-        return true;
-      });
-
-      // Draw and update particles
-      particlesRef.current = particlesRef.current.filter((particle) => {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        particle.vy += 0.05; // Gravity
-        particle.life -= 1 / particle.maxLife;
-
-        if (particle.life <= 0) return false;
-
-        ctx.beginPath();
-        ctx.fillStyle = particle.color.replace(")", ` / ${particle.life * 0.8})`);
-        ctx.arc(particle.x, particle.y, particle.radius * particle.life, 0, Math.PI * 2);
-        ctx.fill();
-
-        return true;
-      });
-
-      // Draw flowing lines connecting sections
-      const sectionPositions = [0.2, 0.4, 0.6, 0.8];
-      ctx.strokeStyle = "oklch(0.70 0.12 250 / 0.08)";
-      ctx.lineWidth = 1;
-
-      sectionPositions.forEach((pos, i) => {
-        const y = pos * canvas.height;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-
-        for (let x = 0; x <= canvas.width; x += 20) {
-          const wave = Math.sin((x / canvas.width) * Math.PI * 4 + time + i) * 30;
-          ctx.lineTo(x, y + wave);
-        }
-        ctx.stroke();
-      });
-
-      time += 0.02;
       animationFrameId = requestAnimationFrame(draw);
     };
 
@@ -261,7 +358,7 @@ export function AnimatedBackground() {
       window.removeEventListener("click", handleClick);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [addRipple, addParticles]);
+  }, [addRipple, addBubble]);
 
   return (
     <canvas

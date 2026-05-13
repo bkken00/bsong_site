@@ -20,10 +20,11 @@ export default function Home() {
         <HeroSection />
         <SectionDivider variant="wave" />
         <IdentitySection />
-        <SectionDivider variant="dots" />
+        <SectionDivider variant="bubbles" />
         <JourneySection />
-        <SectionDivider variant="gradient" />
+        <SectionDivider variant="current" />
         <ArchiveSection />
+        <SectionDivider variant="foam" />
       </main>
       <Footer />
     </>

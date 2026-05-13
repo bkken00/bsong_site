@@ -1,106 +1,105 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors - Rich vibrant palette */
-  --color-background: oklch(0.97 0.02 260);
-  --color-foreground: oklch(0.15 0.03 260);
+  /* Ocean Color Palette */
+  --color-background: oklch(0.92 0.04 220);
+  --color-foreground: oklch(0.15 0.08 220);
   
-  --color-primary: oklch(0.55 0.22 260);
-  --color-primary-foreground: oklch(0.99 0.005 260);
+  --color-primary: oklch(0.50 0.18 220);
+  --color-primary-foreground: oklch(0.98 0.01 220);
   
-  --color-secondary: oklch(0.70 0.15 220);
-  --color-secondary-foreground: oklch(0.15 0.02 220);
+  --color-secondary: oklch(0.65 0.14 200);
+  --color-secondary-foreground: oklch(0.15 0.06 200);
   
-  --color-muted: oklch(0.94 0.03 260);
-  --color-muted-foreground: oklch(0.45 0.04 260);
+  --color-muted: oklch(0.88 0.05 215);
+  --color-muted-foreground: oklch(0.40 0.08 220);
   
-  --color-accent: oklch(0.65 0.20 300);
-  --color-accent-foreground: oklch(0.99 0.005 300);
+  --color-accent: oklch(0.60 0.16 195);
+  --color-accent-foreground: oklch(0.98 0.01 195);
   
-  --color-card: oklch(0.99 0.01 260 / 0.6);
-  --color-card-foreground: oklch(0.15 0.03 260);
+  --color-card: oklch(0.96 0.03 215 / 0.7);
+  --color-card-foreground: oklch(0.15 0.08 220);
   
-  --color-border: oklch(0.80 0.05 260 / 0.4);
+  --color-border: oklch(0.75 0.08 210 / 0.4);
   
-  /* Glassmorphism specific */
-  --color-glass: oklch(0.99 0.01 260 / 0.35);
-  --color-glass-border: oklch(0.99 0.02 260 / 0.5);
+  /* Ocean Glassmorphism */
+  --color-glass: oklch(0.95 0.04 210 / 0.4);
+  --color-glass-border: oklch(0.90 0.05 205 / 0.5);
+  
+  /* Ocean specific colors */
+  --color-ocean-deep: oklch(0.35 0.15 230);
+  --color-ocean-mid: oklch(0.50 0.16 220);
+  --color-ocean-light: oklch(0.70 0.12 210);
+  --color-ocean-surface: oklch(0.85 0.08 200);
+  --color-ocean-foam: oklch(0.95 0.03 195);
+  --color-ocean-teal: oklch(0.55 0.15 195);
   
   /* Typography */
   --font-serif: "Playfair Display", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
   
-  /* Border radius - soft organic */
+  /* Border radius - organic wave-like */
   --radius: 1.5rem;
   --radius-sm: 1rem;
   --radius-lg: 2rem;
   --radius-full: 9999px;
 }
 
-/* Hide default cursor on desktop */
-@media (hover: hover) {
-  * {
-    cursor: none !important;
-  }
-}
-
-/* Animated mesh gradient background */
-@keyframes gradient-shift {
+/* Animated ocean mesh background */
+@keyframes ocean-wave {
   0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes blob-move {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
+    transform: translateX(0) translateY(0);
   }
   25% {
-    transform: translate(20px, -30px) scale(1.05);
+    transform: translateX(10px) translateY(-5px);
   }
   50% {
-    transform: translate(-10px, 20px) scale(0.95);
+    transform: translateX(0) translateY(5px);
   }
   75% {
-    transform: translate(-20px, -10px) scale(1.02);
+    transform: translateX(-10px) translateY(-3px);
   }
 }
 
-@keyframes ripple {
+@keyframes bubble-rise {
   0% {
-    transform: scale(1);
-    opacity: 0.3;
+    transform: translateY(0) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-50%) scale(1.1);
+    opacity: 0.8;
   }
   100% {
-    transform: scale(1.5);
+    transform: translateY(-100%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes ripple-expand {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(3);
     opacity: 0;
   }
 }
 
 @keyframes float {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
   }
-  50% {
-    transform: translateY(-10px);
+  25% {
+    transform: translateY(-8px) rotate(2deg);
   }
-}
-
-@keyframes fade-in-up {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+  75% {
+    transform: translateY(5px) rotate(-2deg);
   }
 }
 
-@keyframes shimmer {
+@keyframes shimmer-wave {
   0% {
     background-position: -200% 0;
   }
@@ -109,12 +108,30 @@
   }
 }
 
+@keyframes current-flow {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px oklch(0.65 0.18 260 / 0.3);
+    box-shadow: 0 0 20px oklch(0.60 0.15 210 / 0.3);
   }
   50% {
-    box-shadow: 0 0 40px oklch(0.65 0.18 260 / 0.5);
+    box-shadow: 0 0 40px oklch(0.65 0.18 200 / 0.5);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
   }
 }
 
@@ -135,97 +152,124 @@ body {
   overflow-x: hidden;
 }
 
-/* Glassmorphism utility */
+/* Ocean Glassmorphism */
 .glass {
   background: var(--color-glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--color-glass-border);
   box-shadow: 
-    0 8px 32px oklch(0.55 0.22 260 / 0.1),
-    inset 0 1px 0 oklch(1 0 0 / 0.1);
+    0 8px 32px oklch(0.50 0.15 220 / 0.1),
+    inset 0 1px 0 oklch(1 0 0 / 0.15),
+    inset 0 -1px 0 oklch(0.50 0.15 220 / 0.05);
 }
 
 .glass-strong {
-  background: oklch(0.99 0.01 260 / 0.7);
+  background: oklch(0.96 0.03 210 / 0.75);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
-  border: 1px solid oklch(0.99 0.02 260 / 0.6);
+  border: 1px solid oklch(0.92 0.04 205 / 0.6);
   box-shadow: 
-    0 8px 32px oklch(0.55 0.22 260 / 0.15),
-    inset 0 1px 0 oklch(1 0 0 / 0.2);
+    0 8px 32px oklch(0.50 0.15 220 / 0.15),
+    inset 0 1px 0 oklch(1 0 0 / 0.2),
+    inset 0 -1px 0 oklch(0.50 0.15 220 / 0.08);
+}
+
+/* Water ripple effect on hover */
+.water-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.water-ripple::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), oklch(0.85 0.10 200 / 0.3) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.water-ripple:hover::after {
+  opacity: 1;
 }
 
 /* Interactive glow on hover */
 .glow-hover {
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
 }
 
 .glow-hover:hover {
   box-shadow: 
-    0 0 30px oklch(0.65 0.18 260 / 0.3),
-    0 20px 40px oklch(0.55 0.22 260 / 0.2);
-  transform: translateY(-2px);
+    0 0 30px oklch(0.60 0.15 210 / 0.4),
+    0 20px 40px oklch(0.50 0.18 220 / 0.2);
+  transform: translateY(-3px);
 }
 
-/* Shimmer effect */
+/* Ocean shimmer effect */
 .shimmer {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    oklch(1 0 0 / 0.1) 50%,
+    oklch(0.90 0.06 200 / 0.2) 50%,
     transparent 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  animation: shimmer-wave 3s infinite;
 }
 
-/* Gradient text */
+/* Ocean gradient text */
 .gradient-text {
   background: linear-gradient(
     135deg,
-    oklch(0.55 0.22 260) 0%,
-    oklch(0.65 0.20 300) 50%,
-    oklch(0.70 0.15 220) 100%
+    oklch(0.50 0.18 230) 0%,
+    oklch(0.55 0.16 210) 30%,
+    oklch(0.60 0.14 195) 60%,
+    oklch(0.50 0.18 230) 100%
   );
+  background-size: 200% 200%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  animation: gradient-shift 4s ease infinite;
 }
 
-/* Text selection */
+/* Text selection with ocean theme */
 ::selection {
-  background: oklch(0.65 0.20 300 / 0.3);
+  background: oklch(0.60 0.15 210 / 0.4);
   color: var(--color-foreground);
 }
 
-/* Scrollbar styling */
+/* Ocean-themed scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-muted);
+  background: linear-gradient(180deg, oklch(0.88 0.05 215), oklch(0.82 0.07 210));
 }
 
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(
     180deg,
-    oklch(0.65 0.18 260),
-    oklch(0.65 0.20 300)
+    oklch(0.55 0.14 210),
+    oklch(0.50 0.16 220),
+    oklch(0.55 0.14 210)
   );
   border-radius: var(--radius-full);
+  border: 2px solid oklch(0.85 0.05 215);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
-    oklch(0.55 0.22 260),
-    oklch(0.55 0.24 300)
+    oklch(0.50 0.16 210),
+    oklch(0.45 0.18 220),
+    oklch(0.50 0.16 210)
   );
 }
 
-/* Animated border gradient */
+/* Animated border gradient - ocean theme */
 .border-gradient {
   position: relative;
 }
@@ -236,10 +280,11 @@ body {
   inset: -2px;
   background: linear-gradient(
     45deg,
-    oklch(0.55 0.22 260),
-    oklch(0.65 0.20 300),
-    oklch(0.70 0.15 220),
-    oklch(0.55 0.22 260)
+    oklch(0.50 0.18 230),
+    oklch(0.55 0.16 210),
+    oklch(0.60 0.14 195),
+    oklch(0.55 0.16 210),
+    oklch(0.50 0.18 230)
   );
   background-size: 300% 300%;
   border-radius: inherit;
@@ -247,7 +292,51 @@ body {
   animation: gradient-shift 4s ease infinite;
 }
 
+/* Floating animation for cards */
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Current flow decoration */
+.current-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.current-line::after {
+  content: "";
+  position: absolute;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, oklch(0.70 0.12 200 / 0.5), transparent);
+  animation: current-flow 3s linear infinite;
+}
+
+/* Bubble button effect */
+.bubble-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.bubble-btn::before {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: oklch(0.95 0.03 200 / 0.6);
+  border-radius: 50%;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: all 0.5s ease;
+}
+
+.bubble-btn:hover::before {
+  animation: bubble-rise 1s ease forwards;
+}
+
 /* Hoverable class for cursor effect */
 .hoverable {
-  cursor: none;
+  cursor: pointer;
 }
